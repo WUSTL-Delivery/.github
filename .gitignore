@@ -1,0 +1,4 @@
+# Documentation with LateX
+docs/*
+!docs/*.tex
+!docs/*.pdf
