@@ -77,9 +77,10 @@ what each robot can do}.
 Everything delivery-shaped --- orders, matching, pathing, the campus graph --- lives in
 \texttt{delivery-gdg-platform} as services that connect to the platform like any other
 client. The club's decision-making role is the \emph{command brain}: a club-side
-service built on the TypeScript SDK that owns zero sockets. It digests presence,
-telemetry, and events into a world model, decides (match, route, reroute), and
-publishes --- \texttt{send(robot, channel, payload)} per-robot or
+service built on the TypeScript SDK that accepts no inbound connections --- purely a
+client, holding a single outbound WebSocket to the control server. It digests
+presence, telemetry, and events into a world model, decides (match, route, reroute),
+and publishes --- \texttt{send(robot, channel, payload)} per-robot or
 \texttt{broadcast(channel, payload)} fleet-wide.
 
 This replaces the club's current \texttt{apps/command} and the socket-hub portion of
