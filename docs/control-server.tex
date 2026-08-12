@@ -218,6 +218,23 @@ From platform presence, live telemetry, and club state (orders in flight, batter
 current state machine state) the brain derives which robots are \emph{dispatchable}
 and feeds that to the matcher.
 
+The world model branches off from the club's state manager
+(\texttt{apps/authoritative/internal/state/}) --- the robot + order
+registry with the delivery lifecycle (\texttt{IDLE} $\to$ \texttt{ASSIGNED} $\to$
+\texttt{MOVING\_TO\_PICKUP} $\to$ \texttt{AT\_PICKUP} $\to$
+\texttt{MOVING\_TO\_DROPOFF} $\to$ \texttt{AT\_DROPOFF} $\to$ \texttt{RETURNING}),
+whose \texttt{GetAvailableRobots} query is exactly this dispatchability derivation.
+Today that code is a state \emph{store} --- raw setters, no transition rules; inside
+the brain it becomes a state \emph{machine}: enforced legal transitions, plus the
+dispatch loop around it (order created + robot available $\to$ matcher $\to$ path
+service $\to$ \texttt{send(robot, "assignment", \dots)}). Its inputs swap from the
+old gRPC/WS hub to SDK subscriptions, and its own \texttt{IsOnline} tracking retires
+in favor of platform presence --- one liveness truth. The two vocabularies stay
+disjoint: the delivery statuses are the club's state machine, the platform's is
+\texttt{AUTONOMOUS} $|$ \texttt{HELP\_REQUESTED} $|$ \texttt{TELEOP}; a robot can be
+\texttt{MOVING\_TO\_DROPOFF} and \texttt{AUTONOMOUS} at once, and neither leaks into
+the other.
+
 This is the integration seam: club services consume platform \emph{events}, not
 platform internals. The platform's database describes the platform's world (fleets,
 tokens, robots, leases); the club's database describes the club's world (users, orders,
